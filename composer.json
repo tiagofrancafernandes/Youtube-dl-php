@@ -26,6 +26,9 @@
     "autoload": {
         "psr-0": {
             "Youtubedl": "src/"
+        },
+        "psr-4": {
+            "Youtubedl\\": "./src/"
         }
     },
     "require-dev": {
