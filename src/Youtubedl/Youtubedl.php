@@ -11,10 +11,38 @@ class Youtubedl
     private $verbose = false;
     private $option;
     private $link;
+    protected $binFilePath = null;
 
     public function __construct()
     {
         $this->option = new Option();
+    }
+
+    /**
+     * @param string $binFilePath
+     *
+     * @return static
+     */
+    public function binFilePath(string $binFilePath): static
+    {
+        $binFilePath = is_string($binFilePath) && trim($binFilePath) ? $binFilePath : null;
+
+        if (is_null($binFilePath) || !is_file($binFilePath)) {
+            throw new YoutubedlException('"binFilePath" param is not a valid file');
+        }
+
+        $this->binFilePath = $binFilePath;
+
+        return $this;
+    }
+
+    public function getBinFilePath(): string
+    {
+        if ($this->binFilePath && is_file($this->binFilePath)) {
+            return $this->binFilePath;
+        }
+
+        return Config::getBinFile();
     }
 
     public function isAsync(bool $bool = false): Youtubedl
@@ -48,7 +76,13 @@ class Youtubedl
 
     public function execute(): array
     {
-        $commands = array_filter(array_merge([Config::getBinFile(), $this->link], $this->option->format()));
+        $commands = array_filter(
+            array_merge([
+                $this->getBinFilePath(),
+                $this->link
+            ], $this->option->format())
+        );
+
         $process = new Process($commands);
         if ($this->verbose) {
             Helper::runProcess($process);
